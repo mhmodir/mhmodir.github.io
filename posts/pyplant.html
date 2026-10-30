@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>pyplant: A Process Plant You Can Break on Purpose · M. H. Modirrousta</title>
-  <meta name="description" content="pyplant is an open-source simulated two-tank plant with a soft PLC, Modbus and OPC UA stack, historian, ISA-18.2 alarms, fault injection and ML fault detection — built to show how a closed-loop controller hides the fault you are looking for."/>
+  <meta name="description" content="pyplant is an open-source simulated two-tank plant with a soft PLC, Modbus and OPC UA stack, historian, ISA-18.2 alarms, fault injection and ML fault detection — built to show how a closed-loop controller hides the fault you are looking for. A step-by-step guide for newcomers and a layer-by-layer deep dive for experts."/>
   <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400;1,600&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -241,13 +241,69 @@
     .doc-card .d-sub { font-size: 0.82rem; color: var(--muted); }
 
 
-    /* ── TABLES ── */
+    /* ── PYPLANT ADDITIONS ── */
+    .prose h2, .prose h3 { scroll-margin-top: 90px; }
     .table-wrap { overflow-x: auto; margin: 1.6rem 0; }
     .prose table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
     .prose th, .prose td { text-align: left; padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--border); vertical-align: top; }
     .prose th { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500; background: var(--warm-white); }
-    .prose td.num, .prose th.num { text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 0.86rem; }
+    .prose td.num, .prose th.num { text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 0.86rem; white-space: nowrap; }
     .prose tr.best td { background: var(--accent-light); color: var(--ink); font-weight: 500; }
+
+    .poster-top { margin: 0 0 2rem; }
+    .poster-top img { margin: 0; width: 100%; }
+    .gif-fig img { width: 100%; }
+
+    .lvl {
+      display: inline-block; font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase;
+      font-weight: 500; padding: 0.12rem 0.55rem; border-radius: 2px; margin-right: 0.5rem;
+      vertical-align: middle; border: 1px solid rgba(184,92,56,0.2);
+    }
+    .lvl.gen { background: #e7efe3; color: #4a6b3c; border-color: rgba(74,107,60,0.25); }
+    .lvl.exp { background: var(--accent-light); color: var(--accent); }
+
+    .toc {
+      background: var(--warm-white); border: 1px solid var(--border);
+      border-radius: 8px; padding: 1.1rem 1.5rem; margin: 1.5rem 0 2rem;
+    }
+    .toc .t-title { font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); font-weight: 500; margin-bottom: 0.5rem; }
+    .toc ol { margin: 0 0 0 1.2rem; columns: 2; column-gap: 2rem; font-size: 0.93rem; }
+    .toc li { margin-bottom: 0.3rem; break-inside: avoid; }
+
+    .stage .expert {
+      font-size: 0.9rem; background: var(--section-bg); border-radius: 4px;
+      padding: 0.6rem 0.85rem; margin-top: 0.7rem; color: #4a463f;
+    }
+    .stage .expert strong { color: var(--accent); font-weight: 500; }
+    .stage .see { font-size: 0.93rem; color: #4a463f; }
+    .stage .see strong { color: #4a6b3c; font-weight: 500; }
+
+    .plain {
+      border-left: 3px solid #8fb07d; background: #f3f7f0;
+      padding: 0.9rem 1.2rem; margin: 1.2rem 0; border-radius: 0 4px 4px 0; font-size: 0.99rem;
+    }
+    .plain .lvl { margin-bottom: 0.3rem; }
+    .plain p { margin-bottom: 0; }
+
+    details.deep {
+      border: 1px solid var(--border); border-radius: 6px; background: var(--warm-white);
+      margin: 1.2rem 0; padding: 0 1.2rem;
+    }
+    details.deep summary {
+      cursor: pointer; padding: 0.85rem 0; font-size: 0.92rem; font-weight: 500;
+      color: var(--accent); list-style: none;
+    }
+    details.deep summary::-webkit-details-marker { display: none; }
+    details.deep summary::before { content: '＋ '; font-family: 'JetBrains Mono', monospace; }
+    details.deep[open] summary::before { content: '－ '; }
+    details.deep[open] summary { border-bottom: 1px solid var(--border); margin-bottom: 1rem; }
+    details.deep > :last-child { margin-bottom: 1.1rem; }
+
+    .bug-list { list-style: none; margin: 1rem 0 1.4rem; padding: 0; }
+    .bug-list li { border-left: 3px solid var(--accent); background: var(--warm-white); padding: 0.8rem 1.1rem; margin-bottom: 0.7rem; border-radius: 0 4px 4px 0; font-size: 0.97rem; }
+    .bug-list li strong { display: block; font-family: 'Lora', serif; font-size: 1.02rem; margin-bottom: 0.15rem; }
+
+    @media (max-width: 720px) { .toc ol { columns: 1; } }
 
     /* ── ARTICLE FOOTER ── */
     .article-end { max-width: 680px; margin: 0 auto; padding: 0 1.5rem 80px; }
@@ -307,7 +363,7 @@
   <div class="article-meta">
     <span class="a-date">October 30, 2026</span>
     <span class="a-tag">Project</span>
-    <span>9 min read</span>
+    <span>22 min read</span>
   </div>
 
   <h1>pyplant: A Process Plant You Can Break on Purpose</h1>
@@ -320,14 +376,56 @@
     <a href="https://github.com/mhmodir/pyplant/blob/main/docs/pdf/pyplant-quickguide.pdf" target="_blank" rel="noopener" class="action-btn outline">
       Quick-start guide (PDF)
     </a>
+    <a href="https://github.com/mhmodir/pyplant/blob/main/docs/pdf/pyplant-poster.pdf" target="_blank" rel="noopener" class="action-btn outline">
+      Poster (PDF)
+    </a>
   </div>
 
+  <figure class="poster-top">
+    <img src="images/pyplant-poster.png" alt="pyplant on one page: the plant, the control loop, and four fault detectors"/>
+    <figcaption>pyplant on one page: the plant, the loop, and four detectors.</figcaption>
+  </figure>
+
   <div class="prose">
-    <p>Fault-detection research has a data problem that is easy to overlook: real plants rarely let you break them. You can't open a leak in a live process to see what your detector does, and public benchmark datasets come with their own quirks and fixed scenarios. So I built a plant I'm allowed to break — a bench-scale process, with the same layers a real one has, that runs on a laptop.</p>
+    <p>Fault-detection research has a data problem that is easy to overlook: real plants rarely let you break them. You can't open a leak in a live process to see what your detector does, and public benchmark datasets come with their own quirks and fixed scenarios. So I built a plant I'm allowed to break — a bench-scale process with the same layers a real one has, running on a laptop.</p>
 
-    <p><strong>pyplant</strong> is a simulated two-tank plant with a soft PLC, a Modbus and OPC UA SCADA stack, a historian, ISA-18.2 alarm management, fault injection, and machine-learning fault detection — all driven from one GUI. It's open source, and nothing in it needs hardware.</p>
+    <p><strong>pyplant</strong> is a simulated two-tank plant with a soft PLC, a Modbus and OPC UA SCADA stack, a historian, ISA-18.2 alarm management, fault injection, and machine-learning fault detection, all driven from one GUI. It is open source, runs in Python at real time or up to twenty times faster, and nothing in it needs hardware.</p>
 
-    <h2>The fault you cannot see</h2>
+    <h2 id="how-to-read">How to read this post</h2>
+    <p>The post is written for two kinds of reader, and each section is labelled so you can skip what you don't need.</p>
+
+    <div class="audience-grid">
+      <div class="audience-card">
+        <span class="au-tag">General reader</span>
+        <h3>You want to see it work</h3>
+        <p>Read <a href="#fault-you-cannot-see">the fault you cannot see</a>, watch <a href="#see-it">the walkthrough</a>, then follow <a href="#try-it">the six steps</a>. Look for the green <span class="lvl gen">In plain terms</span> boxes; they explain each layer without jargon. You don't need to read the expert boxes.</p>
+      </div>
+      <div class="audience-card">
+        <span class="au-tag">Expert reader</span>
+        <h3>You want the method</h3>
+        <p>Jump to <a href="#methods">the layer-by-layer methods</a>, <a href="#detection">detection and evaluation</a>, and <a href="#extend">extending it</a>. Open the <span class="lvl exp">Expert</span> panels for numbers, design rules and the bugs that shaped them. The steps in <a href="#try-it">the hands-on section</a> also carry expert notes.</p>
+      </div>
+    </div>
+
+    <div class="toc">
+      <div class="t-title">Contents</div>
+      <ol>
+        <li><a href="#fault-you-cannot-see">The fault you cannot see</a></li>
+        <li><a href="#see-it">See it in under two minutes</a></li>
+        <li><a href="#try-it">Try it yourself: six steps</a></li>
+        <li><a href="#methods">How it works, layer by layer</a></li>
+        <li><a href="#faults">Eight faults, eight fingerprints</a></li>
+        <li><a href="#detection">Detecting what the controller hides</a></li>
+        <li><a href="#lessons">Bugs that shaped the design</a></li>
+        <li><a href="#extend">Extending it</a></li>
+        <li><a href="#run">Running it: four ways</a></li>
+        <li><a href="#who">Who it's for</a></li>
+        <li><a href="#docs">Documentation</a></li>
+        <li><a href="#next">What's next</a></li>
+      </ol>
+    </div>
+
+    <h2 id="fault-you-cannot-see">The fault you cannot see</h2>
     <p>The project grew out of one observation. Open a leak in tank 1 while a level controller is running, and this is what happens:</p>
 
     <figure>
@@ -351,12 +449,203 @@
       <p>In a closed loop, the controller hides the fault you are looking for.</p>
     </blockquote>
 
-    <p>That sentence is the whole reason pyplant exists. It's why every detector in the project is fed the controller output and three physics residuals alongside the raw measurements, and it's the part of the problem I find most interesting from a process-control point of view: a PI controller with integral action gives zero offset to any step disturbance, which is precisely why a leak vanishes from the level.</p>
+    <div class="plain">
+      <span class="lvl gen">In plain terms</span>
+      <p>Think of a thermostat in a house with a slightly open window. The room stays at 21 °C, so the temperature reading looks perfect — but the heater is working harder than before. The problem shows up in how hard the controller has to work, not in the number it is trying to keep steady. pyplant lets you reproduce exactly this, safely, and then test whether software can notice it.</p>
+    </div>
 
-    <h2>What's in the plant</h2>
-    <p>A centrifugal pump feeds tank 1 through an equal-percentage control valve; tank 1 drains by gravity into tank 2, which drains to atmosphere. A level controller, LIC101, holds tank 1 at 300 mm. Tank 2 is uncontrolled, so a fault in tank 1 reaches it with a lag.</p>
+    <details class="deep">
+      <summary><span class="lvl exp">Expert</span> Why the level comes back exactly</summary>
+      <p>LIC101 is a velocity-form PI controller tuned by internal model control (IMC) at the design point: process gain K ≈ 15.4 mm/%, open-loop time constant τ = 72 s, closed-loop λ = 13 s, giving <code>Kc = 0.35 %/mm</code> and <code>Ti = 72 s</code> with no derivative. Measured response to a 50 mm setpoint step: no overshoot, 2 % settling in about 40 s, zero offset.</p>
+      <p>Integral action gives zero steady-state offset to any step disturbance, so a constant leak flow is rejected in the level and re-appears one-for-one in the manipulated variable. The new steady-state valve position is what balances the extra outflow. That is why every detector in pyplant is fed the controller output and three physics residuals alongside the raw measurements.</p>
+    </details>
 
-    <p>The controller is a velocity-form PI loop tuned by internal model control — no overshoot, settling in about 40 s. Around that sit four processes speaking the protocols a real plant uses, each started by the workbench and connected to the one before it:</p>
+    <h2 id="see-it">See it in under two minutes</h2>
+    <p>The animation below is the whole 17-step quick-start guide in about 97 seconds: start the stack, step the setpoint, inject a leak, watch the controller hide it, generate a labelled dataset, and train four detectors to catch it.</p>
+
+    <figure class="gif-fig">
+      <img src="images/pyplant-walkthrough.gif" alt="Animated walkthrough of the pyplant workbench: start the stack, inject a leak, generate a dataset and train four detectors" loading="lazy"/>
+      <figcaption>Walkthrough: start the stack, inject a leak, train a detector. (Compressed for the web; the full-resolution GIF is in the repository.)</figcaption>
+    </figure>
+
+    <h2 id="try-it">Try it yourself: six steps</h2>
+    <p>Each step says what to <strong>do</strong>, what you should <strong>see</strong>, and what an <strong>expert</strong> should pay attention to. The numbers come from the quick-start guide, so you can check your own run against them.</p>
+
+    <div class="stage">
+      <div class="stage-head"><span class="stage-num">01</span><h3>Install and launch the workbench</h3></div>
+<pre><code>git clone https://github.com/mhmodir/pyplant.git
+cd pyplant
+python -m pip install -e ".[ml,ui,dev]"
+pyplant-workbench</code></pre>
+      <p class="methods"><strong>Do:</strong> you need Python 3.11 or newer. Open <code>http://127.0.0.1:8050</code>. No Python? <code>docker compose up --build</code> then open <code>http://localhost:8050</code>.</p>
+      <p class="see"><strong>You should see:</strong> a header with <em>0/4 services</em> in red, and five tabs: Quick start, Runtime, Faults, Data, Model. Nothing is running yet.</p>
+      <p class="expert"><strong>Expert note:</strong> the extras are independent — <code>ml</code> adds scikit-learn, pyarrow and joblib; <code>ui</code> adds Dash and Plotly; <code>dev</code> adds pytest. On Windows, use a fresh conda environment (check the prompt says <code>(pyplant)</code>, not <code>(base)</code>) and keep speed at 4× or below.</p>
+    </div>
+
+    <div class="stage">
+      <div class="stage-head"><span class="stage-num">02</span><h3>Run a leak offline (10 seconds)</h3></div>
+      <p class="methods"><strong>Do:</strong> on the Quick start tab, scroll to <em>Default scenario</em>, keep <em>Leak in tank 1</em> and <em>30 minutes</em>, press <strong>Run scenario</strong>. No services are needed.</p>
+      <p class="see"><strong>You should see:</strong> level change <strong>+0.02 mm</strong> (the loop hides the leak), controller output change <strong>+9.64 %</strong> (the fault signature), flow FT101 up by <strong>2.91 L/min</strong>, pump trip <em>none</em>, fault onset at <strong>720 s</strong>, and a red band on the chart where the fault is active.</p>
+      <p class="expert"><strong>Expert note:</strong> this uses the same offline fast runner as dataset generation: the same physics and the same PLC program, with no network and no clock, at roughly 1900× real time.</p>
+    </div>
+
+    <div class="stage">
+      <div class="stage-head"><span class="stage-num">03</span><h3>Start the live stack and read the healthy plant</h3></div>
+      <p class="methods"><strong>Do:</strong> press <strong>Start stack</strong> at 1× real time, open the Runtime tab, and note the healthy values. Then type <code>340</code> in the LIC101 setpoint box and press <strong>Write</strong>.</p>
+      <p class="see"><strong>You should see:</strong> badge <em>4/4 services</em> in green. Healthy reference: tank 1 at 300.0 mm, tank 2 at 176.8 mm, valve at 66.1 %, inflow FT101 10.08 L/min against outflow FT102 10.05 L/min (in balance), pump pressure about 50 kPa. After the setpoint write the level climbs to 340 mm cleanly, with no overshoot.</p>
+      <p class="expert"><strong>Expert note:</strong> watch <em>SCAN</em> (about 3.7 ms of a 100 ms budget) and <em>OVERRUNS</em> (must stay 0). The PLC reports its own scan time and overruns as tags. The Runtime tab also shows the exact command line of every service, handy for running them by hand.</p>
+    </div>
+
+    <div class="stage">
+      <div class="stage-head"><span class="stage-num">04</span><h3>Break the plant and watch the controller fight</h3></div>
+      <p class="methods"><strong>Do:</strong> on the Faults tab press <strong>Leak in tank 1</strong>. Scroll to <em>Ground truth against what the instruments report</em>. After about two minutes, go back to the LIC101 faceplate on Runtime, then press <strong>Open HMI</strong>.</p>
+      <p class="see"><strong>You should see:</strong> the <em>faults</em> badge turn red and an active fault row (a leak with an effective area of 0.000050 m²). In the ground-truth table, true and reported values agree within noise, so this is a <em>process</em> fault, not a sensor fault. Two minutes on, the valve is nearly wide open (controller output 93.4 %, up from 68.6 %), inflow has risen from 10 to 18.3 L/min, pump pressure has fallen from 50 to 27.9 kPa — and <strong>no alarm has fired</strong>.</p>
+      <p class="expert"><strong>Expert note:</strong> faults enter through the plant's own HTTP API; nothing above the plant is told. With the setpoint at 340 mm and the valve almost fully open, recovery is slow: the level dips to about 290 mm and creeps back. Sticking-valve and frozen-sensor faults need the loop to move, so raise speed (10×, or 4× on Windows) or change the setpoint after injecting.</p>
+    </div>
+
+    <div class="stage">
+      <div class="stage-head"><span class="stage-num">05</span><h3>Generate a labelled dataset</h3></div>
+      <p class="methods"><strong>Do:</strong> press <strong>Clear all faults</strong>, open the Data tab, choose the <strong>Quick</strong> preset (about 1.5 min), and press <strong>Generate</strong>.</p>
+      <p class="see"><strong>You should see:</strong> a progress bar filling, then a result of 14 runs (6 normal and 8 faulty), 16,814 samples, saved as a 1.7 MB <code>dataset.parquet</code>. Standard (about 4 min) and Thorough (about 10 min) presets build larger grids.</p>
+      <p class="expert"><strong>Expert note:</strong> each fault mode is swept across magnitudes with a randomised onset and its own seed, so a model cannot learn "the fault starts at minute 24". Generation runs in a separate process; the live plant keeps running untouched.</p>
+    </div>
+
+    <div class="stage">
+      <div class="stage-head"><span class="stage-num">06</span><h3>Train four detectors and compare them</h3></div>
+      <p class="methods"><strong>Do:</strong> on the Model tab leave all four methods ticked (z-score limits, PCA/MSPC, isolation forest, autoencoder) with window 60, stride 10, quantile 0.995, and press <strong>Train</strong>.</p>
+      <p class="see"><strong>You should see:</strong> about 12 s later a results table and a per-fault-mode table. On the tiny Quick dataset, PCA and the autoencoder tie at 88 % detected with a 43 s median delay and zero false alarms per day, so PCA is selected (ties go to fewer false alarms, then the simpler method). The leak is detected in 100 % of runs, 139 s after onset, and isolated to <code>FLOW_IMBALANCE</code>.</p>
+      <p class="expert"><strong>Expert note:</strong> the quantile sets the alarm threshold on normal data — higher means fewer false alarms but later detection. The Quick dataset is a demo; the full 58-run benchmark below separates the methods much more clearly. If the table says "no model trained yet" after the job ends, reload the page.</p>
+    </div>
+
+    <figure>
+      <img src="images/pyplant-runtime.png" alt="The pyplant workbench Runtime tab showing the plant mimic, flows, scan diagnostics and the LIC101 faceplate"/>
+      <figcaption>The Runtime tab: plant mimic, flows, scan diagnostics and the LIC101 faceplate.</figcaption>
+    </figure>
+
+    <h2 id="methods">How it works, layer by layer</h2>
+    <p>Everything a real plant has is here at bench scale: a centrifugal pump feeding tank 1 through a control valve, a second tank downstream, a PID loop holding level, interlocks that trip the pump, and the network between the field, the controller and the operator.</p>
+
+    <figure>
+      <svg width="100%" viewBox="0 0 680 190" role="img" xmlns="http://www.w3.org/2000/svg" style="display:block;">
+        <title>The pyplant process: pump, control valve, tank 1, orifice, tank 2, drain, with the LIC101 level controller and a leak</title>
+        <desc>Water flows from a pump through a control valve into tank 1, then through an orifice into tank 2 and out to a drain. LIC101 reads tank 1 level and moves the valve. A leak can open in tank 1.</desc>
+        <style>
+          .q-box { fill: #fff9f3; stroke: #b85c38; stroke-width: 1; }
+          .q-tank { fill: #fff9f3; stroke: #1c1a17; stroke-width: 1.2; }
+          .q-title { font-family: 'DM Sans', sans-serif; font-size: 12px; fill: #1c1a17; font-weight: 500; }
+          .q-sub { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; fill: #6b6560; }
+          .q-flow { stroke: #b85c38; stroke-width: 2; fill: none; }
+          .q-sig { stroke: #6b6560; stroke-width: 1.2; fill: none; stroke-dasharray: 4 3; }
+          .q-leak { stroke: #b85c38; stroke-width: 1.5; fill: none; stroke-dasharray: 2 3; }
+        </style>
+        <circle cx="48" cy="62" r="24" class="q-box"/>
+        <text x="48" y="60" text-anchor="middle" class="q-title">P</text>
+        <text x="48" y="73" text-anchor="middle" class="q-sub">PMP101</text>
+        <path class="q-flow" d="M72 62 L140 62"/>
+        <rect x="140" y="46" width="64" height="32" rx="4" class="q-box"/>
+        <text x="172" y="60" text-anchor="middle" class="q-title">FCV101</text>
+        <text x="172" y="72" text-anchor="middle" class="q-sub">valve · ZT101</text>
+        <path class="q-flow" d="M204 62 L270 62"/>
+        <rect x="270" y="26" width="100" height="96" rx="3" class="q-tank"/>
+        <text x="320" y="70" text-anchor="middle" class="q-title">TANK 1</text>
+        <text x="320" y="84" text-anchor="middle" class="q-sub">LT101</text>
+        <path class="q-flow" d="M370 104 L430 104"/>
+        <text x="400" y="98" text-anchor="middle" class="q-sub">orifice</text>
+        <rect x="430" y="40" width="100" height="82" rx="3" class="q-tank"/>
+        <text x="480" y="78" text-anchor="middle" class="q-title">TANK 2</text>
+        <text x="480" y="92" text-anchor="middle" class="q-sub">LT102</text>
+        <path class="q-flow" d="M530 112 L600 112 L600 150"/>
+        <text x="632" y="162" text-anchor="middle" class="q-sub">drain · FT102</text>
+        <path class="q-leak" d="M300 122 L300 160"/>
+        <text x="300" y="174" text-anchor="middle" class="q-sub">leak</text>
+        <rect x="150" y="136" width="100" height="40" rx="5" class="q-box"/>
+        <text x="200" y="154" text-anchor="middle" class="q-title">LIC101</text>
+        <text x="200" y="167" text-anchor="middle" class="q-sub">PID level control</text>
+        <path class="q-sig" d="M250 150 L270 150 L270 100"/>
+        <path class="q-sig" d="M172 136 L172 80"/>
+      </svg>
+      <figcaption>The process. LIC101 reads tank 1's level (LT101) and moves the valve; a leak opens in tank 1.</figcaption>
+    </figure>
+
+    <div class="stage">
+      <div class="stage-head"><span class="stage-num">01</span><h3>Plant physics</h3></div>
+      <div class="plain">
+        <span class="lvl gen">In plain terms</span>
+        <p>Two tanks connected by a small opening. A pump pushes water in through a valve; the first tank drains into the second, which drains away. The controller adjusts the valve to keep tank 1 at 300 mm. Because tank 2 has no controller, trouble in tank 1 reaches it later.</p>
+      </div>
+      <details class="deep">
+        <summary><span class="lvl exp">Expert</span> Physics, sizing and time stepping</summary>
+        <p>The physics lives in <code>pyplant/core/hybrid_tank.py</code> as pure functions in SI units, with no sockets, sleeping or global state. A centrifugal pump with a quadratic curve feeds tank 1 through an equal-percentage valve with a 2 s actuator lag. Valve flow depends on pump pressure and pump pressure depends on flow, but with a quadratic pump curve that algebraic loop closes in closed form, so there is no iteration and no stiffness at a 50 ms step.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Quantity</th><th>Value</th></tr></thead>
+            <tbody>
+              <tr><td>Tank area, each</td><td>0.020 m²</td></tr>
+              <tr><td>Overflow lip</td><td>600 mm</td></tr>
+              <tr><td>Pump shutoff / max flow</td><td>60 kPa / 25 L/min</td></tr>
+              <tr><td>Design point</td><td>66 % valve, 300 mm, 10 L/min, 50 kPa</td></tr>
+              <tr><td>Open-loop τ at design point</td><td>72 s</td></tr>
+              <tr><td>Usable level range</td><td>about 30 to 580 mm (valve 0.30 to 0.79)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Three rates are deliberately different: <code>dt</code> = 50 ms governs integration accuracy, <code>control_period</code> = 100 ms governs what the controller sees, and <code>log_period</code> = 1 s governs what the historian stores. Inputs are held between scans, giving a genuine zero-order hold at the controller's own sample time — skipping that is the usual reason a PID looks better in simulation than on a PLC. Three parameters double as fault knobs sitting at healthy values: <code>pump_gain</code> (impeller wear), <code>cda_12_gain</code> (interconnect fouling) and <code>cda_leak</code> (a hole in tank 1).</p>
+      </details>
+    </div>
+
+    <div class="stage">
+      <div class="stage-head"><span class="stage-num">02</span><h3>Controller and PLC</h3></div>
+      <div class="plain">
+        <span class="lvl gen">In plain terms</span>
+        <p>A soft PLC — a program that behaves like an industrial controller — wakes up ten times a second, reads the sensors, decides how far to open the valve, and writes the answer back. It also guards the pump: if the tank gets too full or flow stops for too long, it trips the pump and stays tripped until someone resets it.</p>
+      </div>
+      <details class="deep">
+        <summary><span class="lvl exp">Expert</span> PID form, protection logic and the scan engine</summary>
+        <p><strong>Velocity-form PID.</strong> The output <em>is</em> the integrator state, so anti-windup and bumpless transfer fall out of the structure: when the output clamps the increment is discarded, and in manual the output is whatever the operator wrote. Derivative acts on filtered measurement, so a setpoint step produces no kick.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Function</th><th>Trigger</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td><code>ALM_LT101_HI</code></td><td>LT101 above 500 mm</td><td>alarm</td></tr>
+              <tr><td><code>ALM_LT101_LOLO</code></td><td>LT101 below 50 mm</td><td>alarm</td></tr>
+              <tr><td><code>ALM_PT101_HIHI</code></td><td>PT101 above 58 kPa</td><td>alarm</td></tr>
+              <tr><td><code>ILK_PMP101</code></td><td>LT101 above 550 mm, or FT101 below 1 L/min for 15 s</td><td>latched trip</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>All thresholds are read from the tag dictionary, alarms carry hysteresis, and the minimum-flow trip carries an on-delay. Pump protection is minimum flow rather than high pressure because a centrifugal pump against a shut valve simply rises to shutoff head (60 kPa here), so a high-pressure trip below that would fire on legitimate low-output excursions.</p>
+        <p><strong>Scan engine.</strong> Every scan reads inputs, executes logic against the frozen image, then writes outputs, all behind an <code>IOLink</code> protocol so the transport can change without touching the program. Scheduling is drift-free: targets are computed as <code>origin + n · period / speed</code> rather than by sleeping after each scan, so work eats into slack, never into phase (100 ticks of a 100 ms period with a 70 ms body land at exactly 10.000 s, not 17.000 s). PLC timers count scans, not seconds. The engine reports <code>SCAN_MS</code>, <code>SCAN_OVERRUNS</code> and <code>PLC_HEARTBEAT</code> as ordinary tags.</p>
+      </details>
+    </div>
+
+    <div class="stage">
+      <div class="stage-head"><span class="stage-num">03</span><h3>Field network and SCADA</h3></div>
+      <div class="plain">
+        <span class="lvl gen">In plain terms</span>
+        <p>The plant and the PLC are separate programs that talk over the same kinds of network protocols real factories use: Modbus between the field device and the controller, and OPC UA between the controller and everything the operator sees. You can even point a standard OPC UA tool such as UaExpert at the running plant.</p>
+      </div>
+      <details class="deep">
+        <summary><span class="lvl exp">Expert</span> Tag dictionary, ownership, blocks and OPC UA</summary>
+        <p><strong>One source of truth.</strong> <code>pyplant/tags.py</code> declares every signal once: description, units and span, alarm limits, Modbus table and address, integer scale factor, owning process and OPC UA path. Analog values are sent as <code>round(value · scale)</code> in 16-bit registers, ranges are checked at import, and out-of-range values clamp rather than wrap, so a bad write produces a pegged reading rather than a sign flip.</p>
+        <p><strong>Ownership.</strong> Every tag has one owner (<code>PLANT</code>, <code>PLC</code>, <code>OPER</code> or <code>ML</code>) and every block has one writer. A block written by two parties loses updates between a read and a write, which is why the operator's setpoint block is separate from the PLC's readback of it. Reads and writes are by block, never by tag: one Modbus transaction for six measurements, and a partial block write is refused. Four round trips per scan measure about 0.7 ms against a 100 ms budget.</p>
+        <p><strong>OPC UA.</strong> The address space is generated from the tag dictionary and every analog node carries <code>EngineeringUnits</code> and <code>EURange</code>. The server is a <em>view of the same store</em> the Modbus server holds, not a second copy; writable nodes track the last value seen so a refresh running between a client write and its handler cannot revert the write. If the PLC stops writing, the valve holds its last command, as a real one does.</p>
+        <p><strong>Default ports</strong> (workspace base port 5400):</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Port</th><th>Service</th><th>Protocol</th><th>Browser?</th></tr></thead>
+            <tbody>
+              <tr><td class="num">5400</td><td>plant</td><td>Modbus TCP</td><td>no</td></tr>
+              <tr><td class="num">5401</td><td>plant</td><td>HTTP, fault API (<code>/docs</code>)</td><td>yes</td></tr>
+              <tr><td class="num">5402</td><td>PLC</td><td>Modbus TCP</td><td>no</td></tr>
+              <tr><td class="num">5403</td><td>PLC</td><td>OPC UA <code>opc.tcp://127.0.0.1:5403/pyplant/</code></td><td>no, use an OPC UA client</td></tr>
+              <tr><td class="num">5404</td><td>historian</td><td>HTTP, query API</td><td>yes (<code>/api/health</code>)</td></tr>
+              <tr><td class="num">5405</td><td>HMI</td><td>HTTP, operator page</td><td>yes</td></tr>
+              <tr><td class="num">8050</td><td>workbench</td><td>HTTP</td><td>yes</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </div>
 
     <figure>
       <svg width="100%" viewBox="0 0 680 150" role="img" xmlns="http://www.w3.org/2000/svg" style="display:block;">
@@ -372,19 +661,15 @@
         <rect x="6" y="52" width="130" height="50" rx="5" class="p-box"/>
         <text x="71" y="74" text-anchor="middle" class="p-title">Plant</text>
         <text x="71" y="90" text-anchor="middle" class="p-sub">physics · fault API</text>
-
         <rect x="230" y="52" width="130" height="50" rx="5" class="p-box"/>
         <text x="295" y="74" text-anchor="middle" class="p-title">PLC</text>
         <text x="295" y="90" text-anchor="middle" class="p-sub">scan engine · PID</text>
-
         <rect x="520" y="8" width="154" height="50" rx="5" class="p-box"/>
         <text x="597" y="30" text-anchor="middle" class="p-title">Historian</text>
         <text x="597" y="46" text-anchor="middle" class="p-sub">DuckDB</text>
-
         <rect x="520" y="96" width="154" height="50" rx="5" class="p-box"/>
         <text x="597" y="118" text-anchor="middle" class="p-title">HMI</text>
         <text x="597" y="134" text-anchor="middle" class="p-sub">ISA-18.2 alarms</text>
-
         <path class="p-edge" d="M138 77 L228 77"/>
         <text x="183" y="68" text-anchor="middle" class="p-lbl">Modbus TCP</text>
         <path class="p-edge" d="M362 68 L450 33 L518 33"/>
@@ -393,38 +678,51 @@
         <path class="p-edge" d="M597 60 L597 94" stroke-dasharray="3 3"/>
         <text x="632" y="82" class="p-lbl">HTTP</text>
       </svg>
-      <figcaption>Four processes, the protocols a real plant uses. A fifth, the workbench GUI, starts and supervises them.</figcaption>
+      <figcaption>Four processes speaking the protocols a real plant uses. A fifth, the workbench GUI, starts and supervises them.</figcaption>
     </figure>
 
-    <p>Every signal is declared once, in <code>pyplant/tags.py</code>, with its units, span, scale factor, address, owner and alarm limits. Everything else imports it from there.</p>
-
     <div class="stage">
-      <div class="stage-head"><span class="stage-num">01</span><h3>Physics &amp; controller</h3></div>
-      <p>Two tanks, a pump with a quadratic curve, an equal-percentage valve with actuator lag. The pump/valve algebraic loop is solved in closed form, so there is no iteration and no stiffness. The PID uses derivative on measurement, structural anti-windup and bumpless auto/manual transfer.</p>
+      <div class="stage-head"><span class="stage-num">04</span><h3>Historian and operator HMI</h3></div>
+      <div class="plain">
+        <span class="lvl gen">In plain terms</span>
+        <p>The historian is the plant's logbook: it records every signal as it changes. The HMI is the operator's screen: a live picture of the tanks, a trend chart, a control panel for the loop, and an alarm list that makes sure a brief problem nobody saw is not forgotten.</p>
+      </div>
+      <details class="deep">
+        <summary><span class="lvl exp">Expert</span> Historian semantics and the ISA-18.2 state machine</summary>
+        <p><strong>Historian.</strong> A DuckDB store in long format, one row per <code>(ts, tag, value, quality)</code>; wide tables look tidier until someone adds a tag and needs a migration. It subscribes over OPC UA rather than polling, buffers notifications and flushes in batches. Samples are stored by exception plus a heartbeat so the gap never exceeds a maximum (30 s by default). Resampling is <strong>last-value-carried-forward, never interpolation</strong>: between two rows the signal was <em>held</em>, and interpolating would invent a ramp on a valve position and fractional values on an alarm bit, so a model trained on it would learn the resampler instead of the plant. <code>covered_span(tags)</code> returns the interval where every requested tag has a value. Exactly one process writes the database, because DuckDB takes an exclusive lock.</p>
+        <p><strong>Alarms.</strong> A boolean flag collapses four situations into two. The ISA-18.2 state machine keeps them apart:</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>State</th><th>Meaning</th></tr></thead>
+            <tbody>
+              <tr><td><code>NORMAL</code></td><td>quiet, nobody needs to act</td></tr>
+              <tr><td><code>UNACK_ALARM</code></td><td>active, nobody has looked at it</td></tr>
+              <tr><td><code>ACK_ALARM</code></td><td>active, somebody has taken responsibility</td></tr>
+              <tr><td><code>RTN_UNACK</code></td><td>it cleared before anyone looked</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p><code>RTN_UNACK</code> is the point: a condition that comes and goes between two operator glances leaves no trace in a flag-based list, and the transient nobody saw is very often the interesting one. Shelving is a deliberate, expiring silence (capped at eight hours, reason recorded), and unshelving restores the state the condition justifies <em>now</em>. The HMI is a client of the control system: writes go to OPC UA, only writable tags are accepted, out-of-span setpoints are rejected with a 422 rather than silently clamped, and a reset is a pulse, because a latched interlock needs an edge, not a level.</p>
+      </details>
     </div>
 
     <div class="stage">
-      <div class="stage-head"><span class="stage-num">02</span><h3>PLC &amp; field network</h3></div>
-      <p>A scan engine with drift-free scheduling that reports its own scan time and overruns as tags, plus hysteresis on alarms, an on-delay minimum-flow trip and latching interlocks. The plant and PLC talk Modbus TCP with block reads only, every value passing through one codec.</p>
+      <div class="stage-head"><span class="stage-num">05</span><h3>Workbench and the two drivers</h3></div>
+      <div class="plain">
+        <span class="lvl gen">In plain terms</span>
+        <p>The workbench is the one browser window that starts everything, lets you break the plant with a click, builds training datasets and trains the detectors. It keeps no secrets of its own: every number it shows came from a running service a moment ago.</p>
+      </div>
+      <details class="deep">
+        <summary><span class="lvl exp">Expert</span> Two drivers, one program</summary>
+        <p>Dataset generation and the live plant run the <em>same</em> <code>Program</code> object against the <em>same</em> physics; only the clock and the transport differ. The fast runner has no network and no clock and runs at roughly 1900× real time, so a simulated hour takes under two seconds and a dataset of 58 one-hour runs takes minutes. The live plant therefore cannot drift from the training data. The workbench holds no process state, no physics and no thresholds inside a callback, and it trains detectors in background processes.</p>
+      </details>
     </div>
 
-    <div class="stage">
-      <div class="stage-head"><span class="stage-num">03</span><h3>SCADA, historian &amp; alarms</h3></div>
-      <p>An OPC UA address space generated from the tag dictionary; a DuckDB historian stored by exception and queried with last-value-carried-forward resampling, so a held signal is never interpolated into a ramp; and a full ISA-18.2 alarm state machine, including the state a boolean can't express — an alarm that cleared before anyone saw it stays visible until acknowledged.</p>
+    <h2 id="faults">Eight faults, eight fingerprints</h2>
+    <div class="plain">
+      <span class="lvl gen">In plain terms</span>
+      <p>Faults are broken parts you can add to the running plant: a hole in the tank, a worn pump, a clogged pipe, a sticky valve, or a lying sensor. Each one leaves a different trail in the data. Importantly, the control system and the operator screen are <em>not told</em> a fault exists — just like in a real plant, you only find out by watching.</p>
     </div>
-
-    <div class="stage">
-      <div class="stage-head"><span class="stage-num">04</span><h3>Fault injection</h3></div>
-      <p>Faults enter through an API the control system cannot see. Neither the operator page nor any diagnosis model is told a fault was injected; the only way to know is to watch the plant.</p>
-    </div>
-
-    <figure>
-      <img src="images/pyplant-runtime.png" alt="The pyplant workbench Runtime tab showing the plant mimic, flows, scan diagnostics and the LIC101 faceplate"/>
-      <figcaption>The Runtime tab: plant mimic, flows, scan diagnostics and the LIC101 faceplate.</figcaption>
-    </figure>
-
-    <h2>Eight faults, eight fingerprints</h2>
-    <p>Each fault kind leaves a different signature on the same signals, and each has a physics channel that isolates it:</p>
 
     <figure>
       <img src="images/pyplant-fault-gallery.png" alt="Six faults, six fingerprints: leak, worn pump, fouling, sticking valve, biased sensor, frozen sensor"/>
@@ -435,22 +733,105 @@
       <table>
         <thead><tr><th>Fault</th><th>Enters at</th><th>What you see</th><th>Isolating channel</th></tr></thead>
         <tbody>
-          <tr><td><strong>Leak</strong></td><td>process</td><td>level recovers, valve opens</td><td><code>FLOW_IMBALANCE</code></td></tr>
-          <tr><td><strong>Worn pump</strong></td><td>process</td><td>valve opens to make up lost head</td><td><code>HEAD_RESIDUAL</code></td></tr>
-          <tr><td><strong>Fouled interconnect</strong></td><td>process</td><td>valve closes, tank 2 drains down</td><td><code>LT102</code>, <code>FT102</code></td></tr>
-          <tr><td><strong>Sticking valve</strong></td><td>actuator</td><td>sawtooth limit cycle; command and stem disagree</td><td><code>OP_MINUS_ZT</code></td></tr>
-          <tr><td><strong>Sensor bias / drift / frozen</strong></td><td>instrument</td><td>reading looks fine; the truth is offset, creeping or dead</td><td>reported separately</td></tr>
-          <tr><td><strong>Sensor noise</strong></td><td>instrument</td><td>always on, as realism; never labelled a fault</td><td>—</td></tr>
+          <tr><td><strong>Leak</strong></td><td>the process</td><td>level recovers, valve opens, inflow exceeds outflow</td><td><code>FLOW_IMBALANCE</code></td></tr>
+          <tr><td><strong>Worn pump</strong></td><td>the process</td><td>valve opens to make up lost head</td><td><code>HEAD_RESIDUAL</code></td></tr>
+          <tr><td><strong>Fouled interconnect</strong></td><td>the process</td><td>valve closes, tank 2 drains down</td><td><code>LT102</code>, <code>FT102</code></td></tr>
+          <tr><td><strong>Sticking valve</strong></td><td>the actuator</td><td>a sawtooth limit cycle; command and stem disagree</td><td><code>OP_MINUS_ZT</code></td></tr>
+          <tr><td><strong>Sensor bias</strong></td><td>the instrument</td><td>the reading looks perfect; the true level is offset</td><td>reported separately</td></tr>
+          <tr><td><strong>Sensor drift</strong></td><td>the instrument</td><td>an offset that grows slowly</td><td>reported separately</td></tr>
+          <tr><td><strong>Sensor frozen</strong></td><td>the instrument</td><td>a dead reading; move the setpoint and the pump trips</td><td>reported separately</td></tr>
+          <tr><td><strong>Sensor noise</strong></td><td>the instrument</td><td>always on, as realism; never labelled a fault</td><td>—</td></tr>
         </tbody>
       </table>
     </div>
 
-    <p>Because the workbench also shows ground truth next to what each instrument reports, you can tell a <em>process</em> fault (the two agree, and the fault shows up in the controller output) from a <em>sensor</em> fault (they disagree) at a glance.</p>
+    <details class="deep">
+      <summary><span class="lvl exp">Expert</span> Injection design, stiction measurements and the frozen-sensor cascade</summary>
+      <p><strong>Three entry points.</strong> Faults are objects applied to a running plant, never edits to the physics, and each enters at exactly one place: a <em>parameter</em> (<code>Leak</code>, <code>Fouling</code>, <code>PumpWear</code>), a <em>command</em> (<code>ValveStiction</code>) or a <em>signal</em> (<code>SensorBias</code>, <code>SensorDrift</code>, <code>SensorStuck</code>, <code>SensorNoise</code>). Injection happens in <code>Simulation.integrate()</code>, the stepper both runners share, so a fault behaves identically in a dataset run and on the live plant. <code>sim.true_measurements</code> is what the instruments would read if none were lying; <code>sim.measurements</code> is what the control system sees. A transmitter reading 30 mm high and a genuine 30 mm rise produce identical numbers in <code>LT101</code>; they differ only in what the rest of the plant does.</p>
+      <p><strong>Ramps are not cosmetic.</strong> Every fault has a start, an optional end and a ramp; a scenario set containing only step changes trains a detector that is useless on faults that creep. The scenario grid sweeps each mode across magnitudes with randomised onsets and per-run seeds.</p>
+      <p><strong>Noise is not decoration.</strong> Every scenario carries default instrument noise, applied as <em>benign</em> faults that never count as positive labels. Without it a lined-out loop never moves its valve at all, so stiction produces no limit cycle and cannot be detected — and a detector trained on noiseless signals learns a threshold that collapses on the first real transmitter.</p>
+      <p><strong>Stiction measured</strong> (deadband 10 %, slip 7 %, constant setpoint):</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th></th><th class="num">LT101 p-p</th><th class="num">OP p-p</th><th class="num">mean |OP − ZT101|</th></tr></thead>
+          <tbody>
+            <tr><td>healthy</td><td class="num">2.65 mm</td><td class="num">0.92 %</td><td class="num">0.12 %</td></tr>
+            <tr><td>sticking</td><td class="num">30.1 mm</td><td class="num">11.6 %</td><td class="num">4.44 %</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>The command-versus-stem gap identifies stiction, and it is invisible to anything looking only at <code>LT101</code>.</p>
+      <p><strong>A cascade nobody scripted.</strong> <code>sensor_stuck</code> freezes <code>LT101</code>. The controller chases a reading that cannot move, winds the valve shut, starves the pump, and the minimum-flow interlock trips at t = 1985 s. One frozen instrument, and the loop destroys itself.</p>
+    </details>
 
-    <h2>Detecting what the controller hides</h2>
-    <p>Four detectors are compared on the same features: z-score limits, PCA (classical MSPC), an isolation forest, and an autoencoder. Each sees 60 s windows summarised into 48 features, computed from nine tags plus three physics residuals. They're trained on normal operation only and judged on runs they have never seen, split by run so overlapping windows can't leak between training and test.</p>
+    <h2 id="detection">Detecting what the controller hides</h2>
+    <div class="plain">
+      <span class="lvl gen">In plain terms</span>
+      <p>The detectors learn what "normal" looks like by studying the plant running healthily. They are never shown a fault during training. Afterwards, each one is tested on fresh runs it has never seen — some healthy, some faulty — and graded on three things an operator would care about: how many faults it caught, how fast, and whether it cried wolf.</p>
+    </div>
 
-    <p>The benchmark is 58 one-hour scenarios: 10 normal runs and seven fault modes, each at three magnitudes with randomised onset and its own seed.</p>
+    <figure>
+      <svg width="100%" viewBox="0 0 680 120" role="img" xmlns="http://www.w3.org/2000/svg" style="display:block;">
+        <title>pyplant detection pipeline: nine tags and three physics residuals, 60 second windows, 48 features, four detectors, health index and top channel</title>
+        <desc>A left-to-right pipeline from signals to windows to features to four detectors to a health index and the top contributing channel.</desc>
+        <style>
+          .w-box { fill: #fff9f3; stroke: #b85c38; stroke-width: 1; }
+          .w-num { font-family: 'JetBrains Mono', monospace; font-size: 10px; fill: #b85c38; }
+          .w-label { font-family: 'DM Sans', sans-serif; font-size: 11px; fill: #1c1a17; font-weight: 500; }
+          .w-arrow { stroke: #d8997c; stroke-width: 1.5; fill: none; }
+        </style>
+        <g><rect x="6" y="34" width="118" height="52" rx="5" class="w-box"/>
+          <text x="65" y="54" text-anchor="middle" class="w-num">01</text>
+          <text x="65" y="68" text-anchor="middle" class="w-label">9 tags +</text>
+          <text x="65" y="80" text-anchor="middle" class="w-label">3 residuals</text></g>
+        <path class="w-arrow" d="M128 60 L142 60" marker-end="url(#wb)"/>
+        <g><rect x="144" y="34" width="106" height="52" rx="5" class="w-box"/>
+          <text x="197" y="54" text-anchor="middle" class="w-num">02</text>
+          <text x="197" y="72" text-anchor="middle" class="w-label">60 s windows</text></g>
+        <path class="w-arrow" d="M254 60 L268 60" marker-end="url(#wb)"/>
+        <g><rect x="270" y="34" width="106" height="52" rx="5" class="w-box"/>
+          <text x="323" y="54" text-anchor="middle" class="w-num">03</text>
+          <text x="323" y="72" text-anchor="middle" class="w-label">48 features</text></g>
+        <path class="w-arrow" d="M380 60 L394 60" marker-end="url(#wb)"/>
+        <g><rect x="396" y="34" width="128" height="52" rx="5" class="w-box"/>
+          <text x="460" y="54" text-anchor="middle" class="w-num">04</text>
+          <text x="460" y="68" text-anchor="middle" class="w-label">z-score · PCA ·</text>
+          <text x="460" y="80" text-anchor="middle" class="w-label">forest · autoencoder</text></g>
+        <path class="w-arrow" d="M528 60 L542 60" marker-end="url(#wb)"/>
+        <g><rect x="544" y="34" width="130" height="52" rx="5" class="w-box"/>
+          <text x="609" y="54" text-anchor="middle" class="w-num">05</text>
+          <text x="609" y="68" text-anchor="middle" class="w-label">health index 0–100</text>
+          <text x="609" y="80" text-anchor="middle" class="w-label">+ top channel</text></g>
+        <defs><marker id="wb" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0 0 L6 3.5 L0 7 z" fill="#d8997c"/></marker></defs>
+      </svg>
+      <figcaption>Signals → windows → features → four detectors → health index and the channel that contributes most.</figcaption>
+    </figure>
+
+    <h3>Physics-informed channels do the isolation</h3>
+    <p>Three channels are <em>computed</em> rather than measured. Each exists because a first-principles argument says the fault lives in a difference that no single tag contains. Giving a model the residual of a physical relationship is cheaper than making it learn the relationship.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Channel</th><th>Argument</th><th>Isolates</th></tr></thead>
+        <tbody>
+          <tr><td><code>FLOW_IMBALANCE</code></td><td>FT101 − FT102 is zero by conservation of mass</td><td>leaks</td></tr>
+          <tr><td><code>HEAD_RESIDUAL</code></td><td>PT101 minus what the pump curve predicts at that flow</td><td>pump wear</td></tr>
+          <tr><td><code>OP_MINUS_ZT</code></td><td>command minus stem position, zero on a healthy valve</td><td>stiction</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>How the evaluation is done</h3>
+    <ul>
+      <li><strong>Normal data only for training.</strong> A plant has years of normal operation and a handful of documented failures. A supervised classifier would be trained on the rarest thing it will ever see and could not recognise a mode nobody labelled. Fault runs measure the result and never fit it.</li>
+      <li><strong>Split by run, never by sample.</strong> Windows overlap, and neighbouring windows from one run are nearly identical. A random sample split puts window 41 in training and window 42 in test; the score is not slightly optimistic, it is meaningless. Each run has its own seed, magnitude and onset.</li>
+      <li><strong>Operator-style metrics.</strong> Window accuracy mostly measures how long a fault was on. Instead: false alarms per day on held-out normal runs, detection delay in seconds from the declared onset, and isolation against the channel physics names.</li>
+      <li><strong>Persistence rule.</strong> A detection requires three consecutive flagged windows. A detector that flickers above threshold one window in twenty has a fine-looking detection rate and is unusable; the same rule counts false alarms. The raw window flag rate on normal runs is 0.14 %, and persistent excursions are zero.</li>
+      <li><strong>A stable health index.</strong> Raw reconstruction error has no stable scale — retrain and it changes completely. <code>HEALTH_INDEX</code> pins the threshold at 50 with a decade per 50 points, so an alarm limit set by an alarm engineer survives a retrain.</li>
+    </ul>
+
+    <h3>Results</h3>
+    <p>58 one-hour scenarios: 10 normal runs and seven fault modes, each at three magnitudes with randomised onset and its own seed. Detectors are fitted on normal runs only and judged on runs they have never seen.</p>
 
     <figure>
       <img src="images/pyplant-detector-comparison.png" alt="Four detectors compared on detection rate, delay and isolation"/>
@@ -469,12 +850,12 @@
       </table>
     </div>
 
-    <p>The autoencoder catches every fault, and fastest — the only one of the four that does. That's consistent with the plant being non-linear (square-root drains, a quadratic pump curve, an equal-percentage valve), which a linear subspace like PCA's can't follow. I'd be careful, though: these runs show the gap, not its cause.</p>
+    <p>The autoencoder catches every fault, and fastest — the only one of the four that does. That is consistent with the plant being non-linear (square-root drains, a quadratic pump curve, an equal-percentage valve), which a linear subspace like PCA's cannot follow. I'd be careful, though: these runs show the gap, not its cause.</p>
 
     <div class="callout">
       <div class="c-eyebrow">★ The trade-off</div>
       <h3>The best detector is not the best isolator</h3>
-      <p>Z-score limits and the isolation forest name the right channel far more often (93 %) — while missing most faults outright. The autoencoder detects everything but isolates correctly 73 % of the time.</p>
+      <p>Z-score limits and the isolation forest name the right channel far more often (93 %) — while missing most faults outright. The autoencoder detects everything but isolates correctly 73 % of the time. Stiction is found through <code>OP_MINUS_ZT</code> by all four methods, every time. Leaks are attributed to the mass balance in all twelve runs by three methods but only eight by the autoencoder, and PCA never attributes pump wear to the pump curve.</p>
       <p>Choosing a detector is a trade-off, not a ranking: do you need to know <em>that</em> something is wrong, or <em>what</em>?</p>
     </div>
 
@@ -483,37 +864,80 @@
       <figcaption>Which channel each detector blamed, run by run.</figcaption>
     </figure>
 
-    <h2>Who it's for</h2>
+    <h2 id="lessons">Bugs that shaped the design</h2>
+    <p>The repository's design notes read as an engineering log, and the most valuable parts are bugs that only appeared once something was measured. A few of my favourites:</p>
+
+    <ul class="bug-list">
+      <li><strong>The PID that slammed the valve shut.</strong> A velocity-form PID starting at 0 % on a plant already running at 66 % shut the valve on the first scan, the pump dead-headed, and the rig tripped. The program now seeds its output from the valve position feedback.</li>
+      <li><strong>The timer that never fired.</strong> Accumulating <code>elapsed += 0.1</code> reaches 0.9999999999999999 after ten scans, and a <code>&gt;=</code> comparison against a 1.0 s preset never triggers. PLC timers now count scans, not seconds.</li>
+      <li><strong>The stiction that produced no limit cycle.</strong> With a perfectly quiet signal the loop never moved its valve, so there was nothing to stick. Realistic instrument noise had to be part of every scenario.</li>
+      <li><strong>The sensor expectation that was backwards.</strong> In a closed loop, a level transmitter reading 25 mm high is driven back to setpoint: the reading looks perfect and the true level sits 25 mm low. The signature appears everywhere except the faulty instrument, so sensor modes are now reported by consistency rather than scored against a mistaken expectation.</li>
+      <li><strong>Isolation judged too early.</strong> Fouling ramps over twenty minutes; five minutes in it is still a transient that implicates the controlled level instead of the downstream one. Isolation now waits for the ramp to finish.</li>
+      <li><strong>The lost operator write.</strong> One block holding both the operator's setpoint and the PLC's readback lost updates between a read and a publish. The block was split so no block has two writers.</li>
+    </ul>
+
+    <h2 id="extend">Extending it</h2>
+    <div class="plain">
+      <span class="lvl gen">In plain terms</span>
+      <p>If you can write a little Python you can add your own sensor, your own kind of fault, or your own detector, and the rest of the system picks it up. You never have to touch the networking code.</p>
+    </div>
+
+    <div class="stage">
+      <div class="stage-head"><span class="stage-num">+</span><h3>Four extension points</h3></div>
+      <p><strong>A new tag.</strong> Append it to <code>_TAG_LIST</code> in <code>tags.py</code> at an address inside an existing block (or widen the block). Run <code>pytest</code>: holes, overlaps, owner mismatches, scale overflows and duplicate addresses all fail there. If the detector should see it, add it to <code>BASE_TAGS</code> in <code>ml/features.py</code>; <code>DIAG_ORDER</code> is append-only because reordering it changes the meaning of every stored <code>TOP_CONTRIB</code> value.</p>
+      <p><strong>A new fault.</strong> Subclass <code>ParameterFault</code>, <code>SignalFault</code> or (for actuator faults) <code>Fault</code> in <code>faults/model.py</code>, register it in <code>FAULT_KINDS</code>, and add a library entry in <code>faults/scenarios.py</code> so the dataset grid includes it. Decide which channel physics says should isolate it and add that to <code>EXPECTED_CHANNEL</code> in <code>ml/evaluate.py</code> — or leave it unscored and say why.</p>
+      <p><strong>A new detector.</strong> Subclass <code>Detector</code> in <code>ml/detector.py</code>, implement <code>_fit_core</code> and <code>_reconstruct</code> (or override <code>score</code>), then add it to <code>METHODS</code> and <code>make_detector</code>. It inherits thresholding, contributions and the health index, and appears in the workbench's Model tab automatically.</p>
+      <p><strong>A different plant.</strong> Replace <code>core/hybrid_tank.py</code> behind the same <code>step</code>/<code>measure</code> interface and update the tag dictionary. The runner, PLC, network layers and detectors do not need to change; the design point and alarm limits do.</p>
+    </div>
+
+    <h2 id="run">Running it: four ways</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Way</th><th>Command</th><th>Then open</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Workbench</strong></td><td><code>pyplant-workbench</code></td><td><code>http://127.0.0.1:8050</code></td></tr>
+          <tr><td><strong>Services by hand</strong></td><td><code>python examples/run_stack.py</code></td><td>HMI <code>:5405</code>, fault API <code>:5401/docs</code></td></tr>
+          <tr><td><strong>Docker, one container</strong></td><td><code>docker compose up --build</code></td><td><code>http://localhost:8050</code></td></tr>
+          <tr><td><strong>Docker, four containers</strong></td><td><code>docker compose --profile services up --build plant plc historian hmi</code></td><td>HMI <code>:8080</code>, fault API <code>:8000/docs</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <details class="deep">
+      <summary><span class="lvl exp">Expert</span> Options, command-line use and platform notes</summary>
+      <p><strong>Workbench options.</strong> <code>pyplant-workbench --workspace ./work/demo --base-port 5400</code>. The workspace directory holds the config, datasets, trained models and history; <code>--host 0.0.0.0</code> exposes the GUI beyond localhost. Two people on one machine each need their own workspace, base port and GUI port.</p>
+      <p><strong>By hand.</strong> Start the four services in order, because each connects to the one before: <code>pyplant.services.plant</code>, then <code>.plc</code>, <code>.historian</code>, <code>.hmi</code>. Inject a fault from the command line with <code>curl -X POST http://127.0.0.1:5401/api/fault -H 'Content-Type: application/json' -d '{"kind":"leak","id":"L1","magnitude":5e-5}'</code>, or run <code>python examples/inject_fault.py</code>, which also prints the controller's response once a second. (Opening <code>/api/fault</code> in a browser shows "Method Not Allowed" because the address bar sends GET.)</p>
+      <p><strong>Training from the command line.</strong> <code>pyplant-train --out artifacts --duration 3600</code> generates the scenario grid, fits the PCA baseline and the autoencoder on normal runs only, evaluates both on held-out runs, and writes the dataset, fitted detectors, a manifest and <code>metrics.json</code>. For a quick run add <code>--duration 1200 --magnitudes 1 --repeats 1</code>. The workbench's Model tab offers all four methods.</p>
+      <p><strong>Docker.</strong> The one-container mode runs the workbench with the four services inside, publishes only the GUI port, keeps datasets and models in a volume, and runs as an unprivileged user with a health check. The four-container mode puts each service on a private network; if the PLC starts before the plant is listening it exits and is restarted, which is what a controller does when its field device is late. OPC UA is published on <code>opc.tcp://localhost:4840/pyplant/</code>.</p>
+      <p><strong>Windows timer resolution.</strong> <code>speed</code> multiplies how fast the plant runs, so it divides the scan period. Windows schedules sleeps in steps of about 15.6 ms, so above roughly 4× the 100 ms scan falls below what the OS can deliver and <code>SCAN_OVERRUNS</code> climbs. The loop still controls; the scan engine is correctly reporting missed deadlines. Linux and macOS handle 20× comfortably.</p>
+      <p><strong>Why pymodbus is pinned below 3.9.</strong> Later versions replaced the datastore API the plant uses to update its registers while serving them, which is exactly what a live plant does twenty times a second.</p>
+    </details>
+
+    <h2 id="who">Who it's for</h2>
     <div class="audience-grid">
       <div class="audience-card">
         <span class="au-tag">Learning</span>
         <h3>Students of process control</h3>
-        <p>A fully observable loop you can retune with a short script, then break with one click. Watching integral action absorb a leak teaches more than the transfer-function derivation alone.</p>
+        <p>Start with the six steps above, then retune the loop with a short script and try every fault preset. Watching integral action absorb a leak teaches more than the transfer-function derivation alone.</p>
+      </div>
+      <div class="audience-card">
+        <span class="au-tag">Practice</span>
+        <h3>Process and controls engineers</h3>
+        <p>Use the Runtime and Faults tabs, work through the operator HMI, or connect an external OPC UA client such as UaExpert to <code>opc.tcp://127.0.0.1:5403/pyplant/</code> and read the plant the way you would a real one.</p>
       </div>
       <div class="audience-card">
         <span class="au-tag">Research</span>
         <h3>Fault-detection researchers</h3>
-        <p>A closed-loop testbed with labelled ground truth, randomised onsets and a run-level train/test split — and a documented path for adding a fifth detector.</p>
+        <p>A closed-loop testbed with labelled ground truth, randomised onsets and a run-level train/test split, plus a documented path for adding a fifth detector or a different plant.</p>
       </div>
       <div class="audience-card">
-        <span class="au-tag">Practice &amp; teaching</span>
-        <h3>Controls engineers and instructors</h3>
-        <p>Connect an external OPC UA client such as UaExpert to the live plant, work through the operator HMI, or give each student their own workspace and base port.</p>
+        <span class="au-tag">Teaching &amp; development</span>
+        <h3>Instructors and developers</h3>
+        <p>Give each student their own workspace and base port. Developers can read the architecture notes, the 372 tests, and the design log, and add a tag, fault or detector.</p>
       </div>
     </div>
 
-    <h2>Try it</h2>
-    <p>You need Python 3.11 or newer. Then:</p>
-<pre><code>git clone https://github.com/mhmodir/pyplant.git
-cd pyplant
-python -m pip install -e ".[ml,ui,dev]"
-pyplant-workbench</code></pre>
-
-    <p>Open <code>http://127.0.0.1:8050</code> and work left to right through the five tabs: <strong>Quick start</strong> (run a leak offline in 10 seconds), <strong>Runtime</strong> (start the live stack), <strong>Faults</strong> (break the plant), <strong>Data</strong> (generate a labelled dataset) and <strong>Model</strong> (train and compare the four detectors in about 10 seconds). There's also a Docker route: <code>docker compose up --build</code>.</p>
-
-    <p>On Windows, keep the speed at 4× or below. Windows schedules sleeps in 15.6 ms steps, so above that the PLC misses its 100 ms deadline and, correctly, reports overruns.</p>
-
-    <h2>Documentation</h2>
+    <h2 id="docs">Documentation</h2>
     <div class="doc-grid">
       <a href="https://github.com/mhmodir/pyplant/blob/main/docs/pdf/pyplant-quickguide.pdf" target="_blank" rel="noopener" class="doc-card">
         <div class="d-title">Quick-Start Guide</div>
@@ -523,28 +947,29 @@ pyplant-workbench</code></pre>
         <div class="d-title">User Manual</div>
         <div class="d-sub">88 pages, the full reference.</div>
       </a>
-      <a href="https://github.com/mhmodir/pyplant/blob/main/docs/DESIGN_NOTES.md" target="_blank" rel="noopener" class="doc-card">
-        <div class="d-title">Design Notes</div>
-        <div class="d-sub">How it was built, and the bugs measurement found.</div>
+      <a href="https://github.com/mhmodir/pyplant/blob/main/docs/pdf/pyplant-poster.pdf" target="_blank" rel="noopener" class="doc-card">
+        <div class="d-title">Poster</div>
+        <div class="d-sub">The project on one page.</div>
       </a>
-      <a href="https://github.com/mhmodir/pyplant" target="_blank" rel="noopener" class="doc-card">
-        <div class="d-title">Source Code</div>
-        <div class="d-sub">MIT-licensed, 372 tests.</div>
+      <a href="https://github.com/mhmodir/pyplant/blob/main/docs/ARCHITECTURE.md" target="_blank" rel="noopener" class="doc-card">
+        <div class="d-title">ARCHITECTURE.md</div>
+        <div class="d-sub">Processes, data paths, design rules, address plan.</div>
+      </a>
+      <a href="https://github.com/mhmodir/pyplant/blob/main/docs/DEPLOYMENT.md" target="_blank" rel="noopener" class="doc-card">
+        <div class="d-title">DEPLOYMENT.md</div>
+        <div class="d-sub">Install, Docker, configuration, troubleshooting.</div>
+      </a>
+      <a href="https://github.com/mhmodir/pyplant/blob/main/docs/DESIGN_NOTES.md" target="_blank" rel="noopener" class="doc-card">
+        <div class="d-title">DESIGN_NOTES.md</div>
+        <div class="d-sub">How it was built, and the bugs measurement found.</div>
       </a>
     </div>
 
-    <figure>
-      <img src="images/pyplant-poster.png" alt="pyplant on one page: the plant, the loop, and four detectors"/>
-      <figcaption>The project on one page: the plant, the loop and four detectors.</figcaption>
-    </figure>
-
-    <h2>What's next</h2>
+    <h2 id="next">What's next</h2>
     <ul>
       <li><strong>Live inference.</strong> The <code>HEALTH_INDEX</code>, <code>TOP_CONTRIB</code> and <code>ALM_HEALTH</code> tags are declared and the HMI is ready to show them, but nothing publishes them yet. The next step is a service that runs the trained detector on a rolling window from the historian and writes its verdict back over OPC UA, so a diagnosis becomes an alarm.</li>
       <li><strong>A second plant.</strong> The physics sits behind one interface; a jacketed CSTR or the Tennessee Eastman process would exercise the same stack on a harder problem.</li>
     </ul>
-
-    <p>The design notes are, I think, the most interesting read in the repo: a PID that slammed the valve shut on its first scan, a PLC timer that never fired because ten times 0.1 is not 1.0, and a detector judged against the wrong instrument. Each was found by measuring something, and each changed the design.</p>
 
     <blockquote>
       <p>If pyplant is useful in your work, I'd love to hear how — and which fault you wish it could inject.</p>
