@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>pyplant: A Process Plant You Can Break on Purpose · M. H. Modirrousta</title>
+  <meta name="description" content="pyplant is an open-source simulated two-tank plant with a soft PLC, Modbus and OPC UA stack, historian, ISA-18.2 alarms, fault injection and ML fault detection — built to show how a closed-loop controller hides the fault you are looking for."/>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400;1,600&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream: #faf7f2;
+      --warm-white: #fff9f3;
+      --ink: #1c1a17;
+      --muted: #6b6560;
+      --accent: #b85c38;
+      --accent-light: #f0e0d6;
+      --border: #e8e0d5;
+      --section-bg: #f5f0e8;
+      --code-bg: #2b2622;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--cream);
+      color: var(--ink);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      background: rgba(250,247,242,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      z-index: 100;
+      padding: 0 2.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 62px;
+      transition: box-shadow 0.3s;
+    }
+    nav.scrolled { box-shadow: 0 2px 20px rgba(0,0,0,0.08); }
+    .nav-name {
+      font-family: 'Lora', serif; font-size: 1rem;
+      letter-spacing: 0.02em; color: var(--ink); text-decoration: none;
+    }
+    .nav-links { display: flex; gap: 1.8rem; list-style: none; align-items: center; }
+    .nav-links a {
+      text-decoration: none; font-size: 0.8rem;
+      letter-spacing: 0.09em; text-transform: uppercase;
+      color: var(--muted); transition: color 0.2s; position: relative;
+    }
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: -3px; left: 0; right: 0;
+      height: 1.5px; background: var(--accent);
+      transform: scaleX(0); transform-origin: left; transition: transform 0.25s ease;
+    }
+    .nav-links a:hover { color: var(--accent); }
+    .nav-links a:hover::after { transform: scaleX(1); }
+
+    /* ── READING PROGRESS ── */
+    #progress-bar {
+      position: fixed; top: 62px; left: 0; height: 2px;
+      background: var(--accent); z-index: 101; width: 0%;
+      transition: width 0.1s linear;
+    }
+
+    /* ── ARTICLE ── */
+    .article { max-width: 680px; margin: 0 auto; padding: 130px 1.5rem 40px; }
+
+    .back-link {
+      display: inline-block; font-size: 0.78rem; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--muted);
+      text-decoration: none; margin-bottom: 2rem; transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--accent); }
+
+    .article-meta {
+      display: flex; align-items: center; gap: 0.8rem;
+      font-size: 0.78rem; color: var(--muted);
+      margin-bottom: 1rem; flex-wrap: wrap;
+    }
+    .article-meta .a-date { text-transform: uppercase; letter-spacing: 0.1em; }
+    .article-meta .a-tag {
+      background: var(--accent-light); color: var(--accent);
+      font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 0.15rem 0.6rem; border-radius: 2px; border: 1px solid rgba(184,92,56,0.15);
+    }
+
+    .article h1 {
+      font-family: 'Lora', serif;
+      font-size: clamp(1.9rem, 4vw, 2.6rem);
+      font-weight: 600; line-height: 1.2; color: var(--ink);
+      margin-bottom: 1.2rem;
+    }
+    .article-divider { width: 40px; height: 2px; background: var(--accent); margin-bottom: 2rem; }
+
+    /* ── ACTION BUTTONS (demo / repo) ── */
+    .article-actions {
+      display: flex; flex-wrap: wrap; gap: 0.7rem; margin-bottom: 2.5rem;
+    }
+    .action-btn {
+      display: inline-flex; align-items: center; gap: 0.45rem;
+      padding: 0.6rem 1.2rem; border-radius: 4px;
+      font-size: 0.85rem; letter-spacing: 0.02em; text-decoration: none;
+      font-family: 'DM Sans', sans-serif; transition: all 0.2s;
+    }
+    .action-btn.primary { background: var(--accent); color: #fff; border: 1px solid var(--accent); }
+    .action-btn.primary:hover { background: #9e4b2c; transform: translateY(-1px); }
+    .action-btn.outline { background: transparent; color: var(--ink); border: 1px solid var(--border); }
+    .action-btn.outline:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
+
+    /* ── PROSE ── */
+    .prose { font-size: 1.05rem; color: #33302c; }
+    .prose p { margin-bottom: 1.4rem; }
+    .prose h2 {
+      font-family: 'Lora', serif; font-size: 1.5rem; font-weight: 600;
+      color: var(--ink); margin: 2.6rem 0 1rem;
+    }
+    .prose h3 {
+      font-family: 'Lora', serif; font-size: 1.2rem; font-weight: 600;
+      color: var(--ink); margin: 2rem 0 0.8rem;
+    }
+    .prose a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+    .prose a:hover { text-decoration: none; }
+    .prose strong { font-weight: 500; color: var(--ink); }
+    .prose ul, .prose ol { margin: 0 0 1.4rem 1.4rem; }
+    .prose li { margin-bottom: 0.5rem; }
+
+    .prose blockquote {
+      border-left: 3px solid var(--accent);
+      background: var(--warm-white);
+      padding: 1rem 1.4rem; margin: 1.8rem 0;
+      font-family: 'Lora', serif; font-style: italic;
+      font-size: 1.1rem; color: var(--ink);
+      border-radius: 0 4px 4px 0;
+    }
+    .prose blockquote p { margin: 0; }
+
+    .prose img {
+      max-width: 100%; height: auto;
+      border-radius: 4px; border: 1px solid var(--border);
+      margin: 1.8rem 0; display: block;
+    }
+    .prose figcaption {
+      font-size: 0.82rem; color: var(--muted);
+      text-align: center; margin-top: 0.6rem;
+    }
+
+    .prose code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.86em;
+      background: var(--accent-light);
+      color: #8a3f22;
+      padding: 0.12em 0.4em; border-radius: 3px;
+    }
+    .prose pre {
+      background: var(--code-bg); color: #f0e8df;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem; line-height: 1.6;
+      padding: 1.2rem 1.4rem; border-radius: 6px;
+      overflow-x: auto; margin: 1.8rem 0;
+    }
+    .prose pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+
+    .prose hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+
+    /* ── FEATURE CARDS (stage list) ── */
+    .stage {
+      background: var(--warm-white);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 6px 6px 0;
+      padding: 1.2rem 1.5rem;
+      margin: 1.2rem 0;
+    }
+    .stage-head { display: flex; align-items: baseline; gap: 0.6rem; margin-bottom: 0.5rem; }
+    .stage-num { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--accent); font-weight: 500; }
+    .stage h3 { font-family: 'Lora', serif; font-size: 1.15rem; font-weight: 600; color: var(--ink); margin: 0; }
+    .stage p { margin-bottom: 0.6rem; font-size: 0.98rem; }
+    .stage p:last-child { margin-bottom: 0; }
+    .stage .methods { font-size: 0.9rem; color: var(--muted); }
+    .stage .methods strong { color: var(--accent); font-weight: 500; }
+
+    /* ── HIGHLIGHT CALLOUT (AI assistant) ── */
+    .callout {
+      background: linear-gradient(0deg, var(--accent-light), var(--warm-white));
+      border: 1px solid rgba(184,92,56,0.25);
+      border-radius: 8px; padding: 1.5rem 1.6rem; margin: 2rem 0;
+    }
+    .callout .c-eyebrow {
+      font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 0.5rem; font-weight: 500;
+    }
+    .callout h3 { font-family: 'Lora', serif; font-size: 1.3rem; font-weight: 600; color: var(--ink); margin: 0 0 0.6rem; }
+    .callout p { margin-bottom: 0.8rem; }
+    .callout p:last-child { margin-bottom: 0; }
+
+    /* ── AUDIENCE CARDS ── */
+    .audience-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; margin: 1.5rem 0; }
+    .audience-card {
+      background: var(--warm-white); border: 1px solid var(--border);
+      border-radius: 8px; padding: 1.3rem 1.5rem;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .audience-card:hover { border-color: var(--accent); transform: translateX(3px); }
+    .audience-card .au-tag {
+      display: inline-block; font-size: 0.68rem; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--accent); font-weight: 500;
+      background: var(--accent-light); border: 1px solid rgba(184,92,56,0.15);
+      padding: 0.15rem 0.6rem; border-radius: 2px; margin-bottom: 0.7rem;
+    }
+    .audience-card h3 { font-family: 'Lora', serif; font-size: 1.15rem; font-weight: 600; color: var(--ink); margin: 0 0 0.5rem; }
+    .audience-card p { font-size: 0.96rem; margin-bottom: 0; color: #33302c; }
+
+    /* ── VIDEO EMBED (responsive 16:9) ── */
+    .video-wrap {
+      position: relative; width: 100%; padding-bottom: 56.25%;
+      height: 0; overflow: hidden; border-radius: 6px;
+      border: 1px solid var(--border); margin: 1.8rem 0;
+      background: var(--section-bg);
+    }
+    .video-wrap iframe {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;
+    }
+
+    /* ── DOC LINKS ── */
+    .doc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin: 1.5rem 0; }
+    .doc-card {
+      display: block; text-decoration: none; color: inherit;
+      background: var(--warm-white); border: 1px solid var(--border);
+      border-radius: 6px; padding: 1rem 1.2rem; transition: all 0.2s;
+    }
+    .doc-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .doc-card .d-title { font-family: 'Lora', serif; font-weight: 600; font-size: 0.98rem; color: var(--ink); margin-bottom: 0.2rem; }
+    .doc-card .d-sub { font-size: 0.82rem; color: var(--muted); }
+
+
+    /* ── TABLES ── */
+    .table-wrap { overflow-x: auto; margin: 1.6rem 0; }
+    .prose table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+    .prose th, .prose td { text-align: left; padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+    .prose th { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500; background: var(--warm-white); }
+    .prose td.num, .prose th.num { text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 0.86rem; }
+    .prose tr.best td { background: var(--accent-light); color: var(--ink); font-weight: 500; }
+
+    /* ── ARTICLE FOOTER ── */
+    .article-end { max-width: 680px; margin: 0 auto; padding: 0 1.5rem 80px; }
+    .article-end-inner {
+      border-top: 1px solid var(--border); padding-top: 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 1rem;
+    }
+    .author-chip { display: flex; align-items: center; gap: 0.8rem; }
+    .author-chip .a-name { font-family: 'Lora', serif; font-weight: 600; font-size: 0.95rem; }
+    .author-chip .a-sub { font-size: 0.8rem; color: var(--muted); }
+    .share-links { display: flex; gap: 0.6rem; }
+    .share-btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.5rem 1rem; border: 1px solid var(--border);
+      border-radius: 3px; font-size: 0.78rem; color: var(--ink);
+      text-decoration: none; transition: all 0.2s; cursor: pointer;
+      background: transparent; font-family: 'DM Sans', sans-serif;
+    }
+    .share-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    footer {
+      background: var(--ink);
+      padding: 1.5rem 2rem; text-align: center;
+      font-size: 0.78rem; color: rgba(255,255,255,0.3);
+    }
+    footer a { color: rgba(255,255,255,0.5); text-decoration: none; }
+    footer a:hover { color: var(--accent); }
+
+    @media (max-width: 720px) {
+      nav { padding: 0 1rem; }
+      .nav-links { gap: 1rem; font-size: 0.72rem; }
+      .article { padding: 110px 1.3rem 30px; }
+      .prose { font-size: 1rem; }
+      .doc-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a href="../index.html" class="nav-name">M. H. Modirrousta</a>
+  <ul class="nav-links">
+    <li><a href="../index.html#about">About</a></li>
+    <li><a href="../index.html#papers">Papers</a></li>
+    <li><a href="../blog.html">Blog</a></li>
+    <li><a href="../index.html#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<article class="article">
+  <a href="../blog.html" class="back-link">← All posts</a>
+
+  <div class="article-meta">
+    <span class="a-date">October 30, 2026</span>
+    <span class="a-tag">Project</span>
+    <span>9 min read</span>
+  </div>
+
+  <h1>pyplant: A Process Plant You Can Break on Purpose</h1>
+  <div class="article-divider"></div>
+
+  <div class="article-actions">
+    <a href="https://github.com/mhmodir/pyplant" target="_blank" rel="noopener" class="action-btn primary">
+      View on GitHub →
+    </a>
+    <a href="https://github.com/mhmodir/pyplant/blob/main/docs/pdf/pyplant-quickguide.pdf" target="_blank" rel="noopener" class="action-btn outline">
+      Quick-start guide (PDF)
+    </a>
+  </div>
+
+  <div class="prose">
+    <p>Fault-detection research has a data problem that is easy to overlook: real plants rarely let you break them. You can't open a leak in a live process to see what your detector does, and public benchmark datasets come with their own quirks and fixed scenarios. So I built a plant I'm allowed to break — a bench-scale process, with the same layers a real one has, that runs on a laptop.</p>
+
+    <p><strong>pyplant</strong> is a simulated two-tank plant with a soft PLC, a Modbus and OPC UA SCADA stack, a historian, ISA-18.2 alarm management, fault injection, and machine-learning fault detection — all driven from one GUI. It's open source, and nothing in it needs hardware.</p>
+
+    <h2>The fault you cannot see</h2>
+    <p>The project grew out of one observation. Open a leak in tank 1 while a level controller is running, and this is what happens:</p>
+
+    <figure>
+      <img src="images/pyplant-leak-masking.png" alt="A leak opens in tank 1: the level dips and recovers while the controller output stays about 9.6 points higher"/>
+      <figcaption>A leak opens: the level dips and recovers, but the controller output stays 9.6 points higher.</figcaption>
+    </figure>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th></th><th class="num">Tank level</th><th class="num">Controller output</th></tr></thead>
+        <tbody>
+          <tr><td>Before the leak</td><td class="num">300.00 mm</td><td class="num">66.18 %</td></tr>
+          <tr><td>After it settles</td><td class="num"><strong>300.00 mm</strong></td><td class="num"><strong>75.80 %</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>The level returns to setpoint exactly. The controller has absorbed the fault, and its entire signature now lives in the valve position. A detector that watches only the level cannot see this fault at all — and the operator's alarm list stays empty throughout.</p>
+
+    <blockquote>
+      <p>In a closed loop, the controller hides the fault you are looking for.</p>
+    </blockquote>
+
+    <p>That sentence is the whole reason pyplant exists. It's why every detector in the project is fed the controller output and three physics residuals alongside the raw measurements, and it's the part of the problem I find most interesting from a process-control point of view: a PI controller with integral action gives zero offset to any step disturbance, which is precisely why a leak vanishes from the level.</p>
+
+    <h2>What's in the plant</h2>
+    <p>A centrifugal pump feeds tank 1 through an equal-percentage control valve; tank 1 drains by gravity into tank 2, which drains to atmosphere. A level controller, LIC101, holds tank 1 at 300 mm. Tank 2 is uncontrolled, so a fault in tank 1 reaches it with a lag.</p>
+
+    <p>The controller is a velocity-form PI loop tuned by internal model control — no overshoot, settling in about 40 s. Around that sit four processes speaking the protocols a real plant uses, each started by the workbench and connected to the one before it:</p>
+
+    <figure>
+      <svg width="100%" viewBox="0 0 680 150" role="img" xmlns="http://www.w3.org/2000/svg" style="display:block;">
+        <title>pyplant architecture: plant, PLC, historian and HMI connected by Modbus TCP, OPC UA and HTTP</title>
+        <desc>The plant talks Modbus TCP to the PLC; the PLC talks OPC UA to the historian and the HMI; the historian serves the HMI over HTTP.</desc>
+        <style>
+          .p-box { fill: #fff9f3; stroke: #b85c38; stroke-width: 1; }
+          .p-title { font-family: 'DM Sans', sans-serif; font-size: 13px; fill: #1c1a17; font-weight: 500; }
+          .p-sub { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; fill: #6b6560; }
+          .p-edge { stroke: #d8997c; stroke-width: 1.5; fill: none; }
+          .p-lbl { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; fill: #b85c38; }
+        </style>
+        <rect x="6" y="52" width="130" height="50" rx="5" class="p-box"/>
+        <text x="71" y="74" text-anchor="middle" class="p-title">Plant</text>
+        <text x="71" y="90" text-anchor="middle" class="p-sub">physics · fault API</text>
+
+        <rect x="230" y="52" width="130" height="50" rx="5" class="p-box"/>
+        <text x="295" y="74" text-anchor="middle" class="p-title">PLC</text>
+        <text x="295" y="90" text-anchor="middle" class="p-sub">scan engine · PID</text>
+
+        <rect x="520" y="8" width="154" height="50" rx="5" class="p-box"/>
+        <text x="597" y="30" text-anchor="middle" class="p-title">Historian</text>
+        <text x="597" y="46" text-anchor="middle" class="p-sub">DuckDB</text>
+
+        <rect x="520" y="96" width="154" height="50" rx="5" class="p-box"/>
+        <text x="597" y="118" text-anchor="middle" class="p-title">HMI</text>
+        <text x="597" y="134" text-anchor="middle" class="p-sub">ISA-18.2 alarms</text>
+
+        <path class="p-edge" d="M138 77 L228 77"/>
+        <text x="183" y="68" text-anchor="middle" class="p-lbl">Modbus TCP</text>
+        <path class="p-edge" d="M362 68 L450 33 L518 33"/>
+        <path class="p-edge" d="M362 86 L450 121 L518 121"/>
+        <text x="440" y="80" text-anchor="middle" class="p-lbl">OPC UA</text>
+        <path class="p-edge" d="M597 60 L597 94" stroke-dasharray="3 3"/>
+        <text x="632" y="82" class="p-lbl">HTTP</text>
+      </svg>
+      <figcaption>Four processes, the protocols a real plant uses. A fifth, the workbench GUI, starts and supervises them.</figcaption>
+    </figure>
+
+    <p>Every signal is declared once, in <code>pyplant/tags.py</code>, with its units, span, scale factor, address, owner and alarm limits. Everything else imports it from there.</p>
+
+    <div class="stage">
+      <div class="stage-head"><span class="stage-num">01</span><h3>Physics &amp; controller</h3></div>
+      <p>Two tanks, a pump with a quadratic curve, an equal-percentage valve with actuator lag. The pump/valve algebraic loop is solved in closed form, so there is no iteration and no stiffness. The PID uses derivative on measurement, structural anti-windup and bumpless auto/manual transfer.</p>
+    </div>
+
+    <div class="stage">
+      <div class="stage-head"><span class="stage-num">02</span><h3>PLC &amp; field network</h3></div>
+      <p>A scan engine with drift-free scheduling that reports its own scan time and overruns as tags, plus hysteresis on alarms, an on-delay minimum-flow trip and latching interlocks. The plant and PLC talk Modbus TCP with block reads only, every value passing through one codec.</p>
+    </div>
+
+    <div class="stage">
+      <div class="stage-head"><span class="stage-num">03</span><h3>SCADA, historian &amp; alarms</h3></div>
+      <p>An OPC UA address space generated from the tag dictionary; a DuckDB historian stored by exception and queried with last-value-carried-forward resampling, so a held signal is never interpolated into a ramp; and a full ISA-18.2 alarm state machine, including the state a boolean can't express — an alarm that cleared before anyone saw it stays visible until acknowledged.</p>
+    </div>
+
+    <div class="stage">
+      <div class="stage-head"><span class="stage-num">04</span><h3>Fault injection</h3></div>
+      <p>Faults enter through an API the control system cannot see. Neither the operator page nor any diagnosis model is told a fault was injected; the only way to know is to watch the plant.</p>
+    </div>
+
+    <figure>
+      <img src="images/pyplant-runtime.png" alt="The pyplant workbench Runtime tab showing the plant mimic, flows, scan diagnostics and the LIC101 faceplate"/>
+      <figcaption>The Runtime tab: plant mimic, flows, scan diagnostics and the LIC101 faceplate.</figcaption>
+    </figure>
+
+    <h2>Eight faults, eight fingerprints</h2>
+    <p>Each fault kind leaves a different signature on the same signals, and each has a physics channel that isolates it:</p>
+
+    <figure>
+      <img src="images/pyplant-fault-gallery.png" alt="Six faults, six fingerprints: leak, worn pump, fouling, sticking valve, biased sensor, frozen sensor"/>
+      <figcaption>Six faults, six fingerprints.</figcaption>
+    </figure>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Fault</th><th>Enters at</th><th>What you see</th><th>Isolating channel</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Leak</strong></td><td>process</td><td>level recovers, valve opens</td><td><code>FLOW_IMBALANCE</code></td></tr>
+          <tr><td><strong>Worn pump</strong></td><td>process</td><td>valve opens to make up lost head</td><td><code>HEAD_RESIDUAL</code></td></tr>
+          <tr><td><strong>Fouled interconnect</strong></td><td>process</td><td>valve closes, tank 2 drains down</td><td><code>LT102</code>, <code>FT102</code></td></tr>
+          <tr><td><strong>Sticking valve</strong></td><td>actuator</td><td>sawtooth limit cycle; command and stem disagree</td><td><code>OP_MINUS_ZT</code></td></tr>
+          <tr><td><strong>Sensor bias / drift / frozen</strong></td><td>instrument</td><td>reading looks fine; the truth is offset, creeping or dead</td><td>reported separately</td></tr>
+          <tr><td><strong>Sensor noise</strong></td><td>instrument</td><td>always on, as realism; never labelled a fault</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Because the workbench also shows ground truth next to what each instrument reports, you can tell a <em>process</em> fault (the two agree, and the fault shows up in the controller output) from a <em>sensor</em> fault (they disagree) at a glance.</p>
+
+    <h2>Detecting what the controller hides</h2>
+    <p>Four detectors are compared on the same features: z-score limits, PCA (classical MSPC), an isolation forest, and an autoencoder. Each sees 60 s windows summarised into 48 features, computed from nine tags plus three physics residuals. They're trained on normal operation only and judged on runs they have never seen, split by run so overlapping windows can't leak between training and test.</p>
+
+    <p>The benchmark is 58 one-hour scenarios: 10 normal runs and seven fault modes, each at three magnitudes with randomised onset and its own seed.</p>
+
+    <figure>
+      <img src="images/pyplant-detector-comparison.png" alt="Four detectors compared on detection rate, delay and isolation"/>
+      <figcaption>Four detectors compared on detection rate, delay and isolation.</figcaption>
+    </figure>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Method</th><th class="num">Faulty runs detected</th><th class="num">Median delay</th><th class="num">False alarms</th><th class="num">Isolation</th></tr></thead>
+        <tbody>
+          <tr><td>z-score limits</td><td class="num">66.7 %</td><td class="num">175 s</td><td class="num">0 / day</td><td class="num">93 %</td></tr>
+          <tr><td>PCA (classical MSPC)</td><td class="num">83.3 %</td><td class="num">256 s</td><td class="num">0 / day</td><td class="num">60 %</td></tr>
+          <tr><td>Isolation forest</td><td class="num">37.5 %</td><td class="num">442 s</td><td class="num">0 / day</td><td class="num">93 %</td></tr>
+          <tr class="best"><td>Autoencoder</td><td class="num">100 %</td><td class="num">70 s</td><td class="num">0 / day</td><td class="num">73 %</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>The autoencoder catches every fault, and fastest — the only one of the four that does. That's consistent with the plant being non-linear (square-root drains, a quadratic pump curve, an equal-percentage valve), which a linear subspace like PCA's can't follow. I'd be careful, though: these runs show the gap, not its cause.</p>
+
+    <div class="callout">
+      <div class="c-eyebrow">★ The trade-off</div>
+      <h3>The best detector is not the best isolator</h3>
+      <p>Z-score limits and the isolation forest name the right channel far more often (93 %) — while missing most faults outright. The autoencoder detects everything but isolates correctly 73 % of the time.</p>
+      <p>Choosing a detector is a trade-off, not a ranking: do you need to know <em>that</em> something is wrong, or <em>what</em>?</p>
+    </div>
+
+    <figure>
+      <img src="images/pyplant-isolation-matrix.png" alt="Matrix showing which channel each detector blamed, run by run"/>
+      <figcaption>Which channel each detector blamed, run by run.</figcaption>
+    </figure>
+
+    <h2>Who it's for</h2>
+    <div class="audience-grid">
+      <div class="audience-card">
+        <span class="au-tag">Learning</span>
+        <h3>Students of process control</h3>
+        <p>A fully observable loop you can retune with a short script, then break with one click. Watching integral action absorb a leak teaches more than the transfer-function derivation alone.</p>
+      </div>
+      <div class="audience-card">
+        <span class="au-tag">Research</span>
+        <h3>Fault-detection researchers</h3>
+        <p>A closed-loop testbed with labelled ground truth, randomised onsets and a run-level train/test split — and a documented path for adding a fifth detector.</p>
+      </div>
+      <div class="audience-card">
+        <span class="au-tag">Practice &amp; teaching</span>
+        <h3>Controls engineers and instructors</h3>
+        <p>Connect an external OPC UA client such as UaExpert to the live plant, work through the operator HMI, or give each student their own workspace and base port.</p>
+      </div>
+    </div>
+
+    <h2>Try it</h2>
+    <p>You need Python 3.11 or newer. Then:</p>
+<pre><code>git clone https://github.com/mhmodir/pyplant.git
+cd pyplant
+python -m pip install -e ".[ml,ui,dev]"
+pyplant-workbench</code></pre>
+
+    <p>Open <code>http://127.0.0.1:8050</code> and work left to right through the five tabs: <strong>Quick start</strong> (run a leak offline in 10 seconds), <strong>Runtime</strong> (start the live stack), <strong>Faults</strong> (break the plant), <strong>Data</strong> (generate a labelled dataset) and <strong>Model</strong> (train and compare the four detectors in about 10 seconds). There's also a Docker route: <code>docker compose up --build</code>.</p>
+
+    <p>On Windows, keep the speed at 4× or below. Windows schedules sleeps in 15.6 ms steps, so above that the PLC misses its 100 ms deadline and, correctly, reports overruns.</p>
+
+    <h2>Documentation</h2>
+    <div class="doc-grid">
+      <a href="https://github.com/mhmodir/pyplant/blob/main/docs/pdf/pyplant-quickguide.pdf" target="_blank" rel="noopener" class="doc-card">
+        <div class="d-title">Quick-Start Guide</div>
+        <div class="d-sub">20 pages, a screenshot at every step.</div>
+      </a>
+      <a href="https://github.com/mhmodir/pyplant/blob/main/docs/pdf/pyplant-manual.pdf" target="_blank" rel="noopener" class="doc-card">
+        <div class="d-title">User Manual</div>
+        <div class="d-sub">88 pages, the full reference.</div>
+      </a>
+      <a href="https://github.com/mhmodir/pyplant/blob/main/docs/DESIGN_NOTES.md" target="_blank" rel="noopener" class="doc-card">
+        <div class="d-title">Design Notes</div>
+        <div class="d-sub">How it was built, and the bugs measurement found.</div>
+      </a>
+      <a href="https://github.com/mhmodir/pyplant" target="_blank" rel="noopener" class="doc-card">
+        <div class="d-title">Source Code</div>
+        <div class="d-sub">MIT-licensed, 372 tests.</div>
+      </a>
+    </div>
+
+    <figure>
+      <img src="images/pyplant-poster.png" alt="pyplant on one page: the plant, the loop, and four detectors"/>
+      <figcaption>The project on one page: the plant, the loop and four detectors.</figcaption>
+    </figure>
+
+    <h2>What's next</h2>
+    <ul>
+      <li><strong>Live inference.</strong> The <code>HEALTH_INDEX</code>, <code>TOP_CONTRIB</code> and <code>ALM_HEALTH</code> tags are declared and the HMI is ready to show them, but nothing publishes them yet. The next step is a service that runs the trained detector on a rolling window from the historian and writes its verdict back over OPC UA, so a diagnosis becomes an alarm.</li>
+      <li><strong>A second plant.</strong> The physics sits behind one interface; a jacketed CSTR or the Tennessee Eastman process would exercise the same stack on a harder problem.</li>
+    </ul>
+
+    <p>The design notes are, I think, the most interesting read in the repo: a PID that slammed the valve shut on its first scan, a PLC timer that never fired because ten times 0.1 is not 1.0, and a detector judged against the wrong instrument. Each was found by measuring something, and each changed the design.</p>
+
+    <blockquote>
+      <p>If pyplant is useful in your work, I'd love to hear how — and which fault you wish it could inject.</p>
+    </blockquote>
+
+    <p>Clone it from <a href="https://github.com/mhmodir/pyplant" target="_blank" rel="noopener">GitHub</a>, open an issue, or reach out via the <a href="../index.html#contact">contact page</a>.</p>
+  </div>
+</article>
+
+<div class="article-end">
+  <div class="article-end-inner">
+    <div class="author-chip">
+      <div>
+        <div class="a-name">Mohammad Hossein Modirrousta</div>
+        <div class="a-sub">PhD Researcher · University of Alberta</div>
+      </div>
+    </div>
+    <div class="share-links">
+      <button class="share-btn" onclick="copyLink()" id="copy-btn">Copy link</button>
+      <a class="share-btn" id="li-share" href="#" target="_blank" rel="noopener">Share on LinkedIn</a>
+    </div>
+  </div>
+</div>
+
+<footer>
+  © 2026 Mohammad Hossein Modirrousta · <a href="../blog.html">More posts</a>
+</footer>
+
+<script>
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100;
+    bar.style.width = pct + '%';
+    document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 20);
+  });
+
+  const pageUrl = window.location.href;
+  document.getElementById('li-share').href =
+    'https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(pageUrl);
+
+  function copyLink() {
+    navigator.clipboard.writeText(pageUrl).then(() => {
+      const b = document.getElementById('copy-btn');
+      const original = b.textContent;
+      b.textContent = 'Copied ✓';
+      setTimeout(() => { b.textContent = original; }, 1800);
+    });
+  }
+</script>
+</body>
+</html>
